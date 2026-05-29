@@ -45,8 +45,10 @@ const upload = multer({
 
 // Create trip
 app.post('/api/trip/create', (req, res) => {
-  const { tripName, creatorName } = req.body;
+  const { tripName, creatorName, password } = req.body;
   if (!tripName || !creatorName) return res.status(400).json({ error: 'Missing fields' });
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'memories2026';
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Wrong password. Only the organiser can create a trip.' });
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
   const tripId = uuidv4();
   db.trips[code] = {
