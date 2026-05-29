@@ -27,18 +27,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
 .w-hero{position:relative;height:52dvh;min-height:280px;background:linear-gradient(160deg,#3d1a02 0%,#7a3800 40%,#c4700a 75%,#e8a84c 100%);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 24px 32px;flex-shrink:0}
 .w-hero-circles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .w-hero-circles span{position:absolute;border-radius:50%;opacity:.12}
-.w-hero-circles span:nth-child(1){width:300px;height:300px;background:#fff;top:-80px;right:-60px}
-.w-hero-circles span:nth-child(2){width:180px;height:180px;background:#fff;bottom:20px;left:-50px}
-.w-hero-circles span:nth-child(3){width:100px;height:100px;background:#fff;top:40px;left:30px;opacity:.07}
-.w-camera-ring{width:80px;height:80px;border-radius:22px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;margin-bottom:16px;backdrop-filter:blur(8px)}
+.w-hero-circles span:nth-child(1){width:300px;height:300px;background:#fff;top:-80px;right:-60px;animation:floatA 7s ease-in-out infinite}
+.w-hero-circles span:nth-child(2){width:180px;height:180px;background:#fff;bottom:20px;left:-50px;animation:floatB 9s ease-in-out infinite}
+.w-hero-circles span:nth-child(3){width:100px;height:100px;background:#fff;top:40px;left:30px;opacity:.07;animation:floatC 11s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-18px,22px) scale(1.08)}}
+@keyframes floatB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(14px,-18px) scale(1.05)}}
+@keyframes floatC{0%,100%{transform:translate(0,0)}50%{transform:translate(10px,12px)}}
+.w-camera-ring{width:80px;height:80px;border-radius:22px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;margin-bottom:16px;backdrop-filter:blur(8px);animation:popIn .7s cubic-bezier(.34,1.56,.64,1) both;animation-delay:.1s}
 .w-camera-ring i{font-size:36px;color:#fff}
-.w-hero h1{font-family:'Playfair Display',serif;font-size:38px;color:#fff;text-align:center;line-height:1.1;margin-bottom:8px}
-.w-hero p{font-size:14px;color:rgba(255,255,255,.7);text-align:center;line-height:1.5;max-width:260px}
+.w-hero h1{font-family:'Playfair Display',serif;font-size:38px;color:#fff;text-align:center;line-height:1.1;margin-bottom:8px;animation:slideUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:.3s}
+.w-hero p{font-size:14px;color:rgba(255,255,255,.7);text-align:center;line-height:1.5;max-width:260px;animation:slideUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:.45s}
 .w-body{background:#0d0805;flex:1;padding:0 20px 32px;display:flex;flex-direction:column}
-.w-tabs{display:flex;background:rgba(255,255,255,.06);border-radius:14px;padding:4px;margin:20px 0 22px;gap:4px}
+.w-tabs{display:flex;background:rgba(255,255,255,.06);border-radius:14px;padding:4px;margin:20px 0 22px;gap:4px;animation:slideUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:.55s}
 .w-tab{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:500;text-align:center;cursor:pointer;color:rgba(255,255,255,.45);transition:all .25s;border:none;background:transparent;font-family:'DM Sans',sans-serif}
 .w-tab.active{background:var(--amber);color:#fff;box-shadow:0 4px 14px rgba(196,112,10,.4)}
-.w-panel{display:none}.w-panel.active{display:block}
+.w-panel{display:none}.w-panel.active{display:block;animation:fadeSlideIn .4s cubic-bezier(.22,1,.36,1) both}
 .w-label{font-size:11px;font-weight:500;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;display:block}
 .w-input{width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);color:#fff;font-size:15px;font-family:'DM Sans',sans-serif;margin-bottom:14px;transition:border .2s,background .2s;-webkit-appearance:none}
 .w-input::placeholder{color:rgba(255,255,255,.3)}
@@ -51,10 +54,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
 .w-btn-join:active{background:rgba(255,255,255,.14)}
 .w-error{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5;border-radius:10px;padding:10px 13px;font-size:13px;margin-bottom:12px;display:none}
 .w-error.show{display:block}
-.w-features{display:flex;gap:8px;margin-top:18px}
+.w-features{display:flex;gap:8px;margin-top:18px;animation:slideUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:.7s}
 .w-feat{flex:1;background:rgba(255,255,255,.05);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid rgba(255,255,255,.07)}
 .w-feat i{font-size:20px;color:var(--amber);display:block;margin-bottom:5px}
 .w-feat span{font-size:11px;color:rgba(255,255,255,.45);line-height:1.3;display:block}
+@keyframes popIn{0%{opacity:0;transform:scale(.5) rotate(-6deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes slideUp{0%{opacity:0;transform:translateY(30px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes fadeSlideIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
 /* keep old .form-box for any legacy refs */
 .form-box{width:100%;max-width:400px;background:var(--white);border-radius:16px;border:1px solid var(--border);padding:22px;box-shadow:var(--shadow)}
 .form-box h2{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;color:var(--amber-d)}
@@ -211,6 +217,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
 .rem-cancel{background:#f3f4f6;color:#374151}
 .rem-confirm{background:#dc2626;color:#fff}
 
+/* Vehicle animation */
+.w-vehicle{position:absolute;bottom:0;left:0;right:0;height:68px;overflow:hidden;pointer-events:none}
+.road{position:absolute;bottom:0;left:0;right:0;height:14px;background:rgba(0,0,0,.25)}
+.road-line{position:absolute;bottom:6px;height:3px;background:rgba(255,255,255,.25);border-radius:2px;width:40px;animation:roadScroll 1.2s linear infinite}
+.road-line:nth-child(1){left:5%;animation-delay:0s}
+.road-line:nth-child(2){left:30%;animation-delay:-.4s}
+.road-line:nth-child(3){left:55%;animation-delay:-.8s}
+.road-line:nth-child(4){left:80%;animation-delay:-.2s}
+@keyframes roadScroll{0%{transform:translateX(0);opacity:1}100%{transform:translateX(-120px);opacity:.3}}
+.bus-wrap{position:absolute;bottom:14px;animation:busRide 18s linear infinite}
+@keyframes busRide{0%{left:-100px}100%{left:110%}}
+/* Dust particles */
+.dust{position:absolute;bottom:16px;width:6px;height:6px;border-radius:50%;background:rgba(255,220,150,.5);animation:dustPuff 1.2s ease-out infinite}
+.dust:nth-child(1){animation-delay:0s}.dust:nth-child(2){animation-delay:-.4s;width:4px;height:4px}.dust:nth-child(3){animation-delay:-.8s;width:5px;height:5px}
+@keyframes dustPuff{0%{opacity:.7;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(-22px,-14px) scale(.3)}}
 /* PWA install prompt */
 .pwa-banner{background:var(--amber-d);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
 .pwa-banner button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap}
@@ -277,6 +298,73 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
       <div class="w-camera-ring"><i class="ti ti-camera-heart" aria-hidden="true"></i></div>
       <h1>Memories</h1>
       <p>Your trip moments, shared with everyone in original quality</p>
+      <!-- Animated vehicle -->
+      <div class="w-vehicle">
+        <div class="road">
+          <div class="road-line"></div><div class="road-line"></div>
+          <div class="road-line"></div><div class="road-line"></div>
+        </div>
+        <div class="bus-wrap">
+          <!-- Dust particles -->
+          <div class="dust" style="left:-8px"></div>
+          <div class="dust" style="left:-14px"></div>
+          <div class="dust" style="left:-5px"></div>
+          <!-- Normal Car SVG with luggage -->
+          <svg width="88" height="48" viewBox="0 0 88 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Roof rack bars -->
+            <rect x="28" y="4" width="32" height="1.5" rx=".75" fill="rgba(255,255,255,0.5)" stroke="rgba(255,255,255,0.3)" stroke-width=".5"/>
+            <rect x="28" y="4.3" width="1.5" height="3" rx=".5" fill="rgba(255,255,255,0.4)"/>
+            <rect x="58.5" y="4.3" width="1.5" height="3" rx=".5" fill="rgba(255,255,255,0.4)"/>
+            <!-- Big suitcase (left) -->
+            <rect x="30" y="0" width="13" height="5" rx="1.2" fill="rgba(255,200,80,0.85)" stroke="rgba(255,255,255,0.45)" stroke-width=".7"/>
+            <line x1="36.5" y1="0" x2="36.5" y2="5" stroke="rgba(255,255,255,0.35)" stroke-width=".6"/>
+            <rect x="34" y="1" width="5" height="1.2" rx=".6" fill="rgba(255,255,255,0.4)"/>
+            <!-- Medium bag (middle) -->
+            <rect x="45" y="0.5" width="10" height="4.5" rx="1" fill="rgba(255,120,100,0.8)" stroke="rgba(255,255,255,0.4)" stroke-width=".7"/>
+            <line x1="50" y1="0.5" x2="50" y2="5" stroke="rgba(255,255,255,0.3)" stroke-width=".6"/>
+            <rect x="48" y="1.2" width="4" height="1" rx=".5" fill="rgba(255,255,255,0.35)"/>
+            <!-- Small bag on top of big suitcase -->
+            <rect x="31.5" y="-3.5" width="7" height="4" rx="1" fill="rgba(120,200,255,0.8)" stroke="rgba(255,255,255,0.4)" stroke-width=".7"/>
+            <rect x="34" y="-2.8" width="2" height=".8" rx=".4" fill="rgba(255,255,255,0.4)"/>
+            <!-- Strap holding luggage -->
+            <line x1="29" y1="2.5" x2="57" y2="2.5" stroke="rgba(255,200,50,0.6)" stroke-width=".8" stroke-dasharray="3,2"/>
+            <!-- Car body lower -->
+            <rect x="3" y="30" width="82" height="14" rx="4" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.38)" stroke-width="1.2"/>
+            <!-- Car cabin / roof -->
+            <path d="M18 30 C20 20, 28 16, 38 15 L54 15 C64 15, 70 20, 72 30 Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.32)" stroke-width="1.1"/>
+            <!-- Windshield front -->
+            <path d="M54 16 C62 17, 68 22, 70 30 L54 30 Z" fill="rgba(135,210,255,0.38)" stroke="rgba(255,255,255,0.25)" stroke-width=".8"/>
+            <!-- Rear windshield -->
+            <path d="M34 16 C26 17, 21 22, 19 30 L34 30 Z" fill="rgba(135,210,255,0.32)" stroke="rgba(255,255,255,0.25)" stroke-width=".8"/>
+            <!-- Side window -->
+            <path d="M36 16.5 L52 16.5 L52 29.5 L36 29.5 Z" fill="rgba(135,210,255,0.42)" stroke="rgba(255,255,255,0.3)" stroke-width=".8"/>
+            <!-- Window divider -->
+            <line x1="44" y1="16.5" x2="44" y2="29.5" stroke="rgba(255,255,255,0.25)" stroke-width=".8"/>
+            <!-- Headlight -->
+            <rect x="78" y="32" width="7" height="5" rx="2" fill="rgba(255,235,100,0.85)"/>
+            <ellipse cx="84" cy="34.5" rx="3" ry="2" fill="rgba(255,245,150,0.4)"/>
+            <!-- Rear light -->
+            <rect x="3" y="33" width="6" height="4" rx="2" fill="rgba(255,90,70,0.75)"/>
+            <!-- Front bumper -->
+            <rect x="76" y="40" width="10" height="3" rx="1.5" fill="rgba(255,255,255,0.18)"/>
+            <!-- Rear bumper -->
+            <rect x="2" y="40" width="10" height="3" rx="1.5" fill="rgba(255,255,255,0.18)"/>
+            <!-- Door line -->
+            <line x1="44" y1="30" x2="44" y2="44" stroke="rgba(255,255,255,0.18)" stroke-width=".8"/>
+            <!-- Door handles -->
+            <rect x="37" y="36" width="5" height="1.5" rx=".75" fill="rgba(255,255,255,0.35)"/>
+            <rect x="46" y="36" width="5" height="1.5" rx=".75" fill="rgba(255,255,255,0.35)"/>
+            <!-- Wheels -->
+            <circle cx="20" cy="45" r="5" fill="rgba(20,12,5,0.85)" stroke="rgba(255,255,255,0.38)" stroke-width="1.4"/>
+            <circle cx="20" cy="45" r="2" fill="rgba(255,255,255,0.25)"/>
+            <circle cx="68" cy="45" r="5" fill="rgba(20,12,5,0.85)" stroke="rgba(255,255,255,0.38)" stroke-width="1.4"/>
+            <circle cx="68" cy="45" r="2" fill="rgba(255,255,255,0.25)"/>
+            <!-- Person silhouettes in window -->
+            <ellipse cx="40" cy="24" rx="3.5" ry="3" fill="rgba(255,255,255,0.22)"/>
+            <ellipse cx="49" cy="24" rx="3.5" ry="3" fill="rgba(255,255,255,0.16)"/>
+          </svg>
+        </div>
+      </div>
     </div>
 
     <!-- Form section -->
@@ -291,9 +379,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
       <div class="w-panel active" id="wp-create">
         <div id="create-error" class="w-error"></div>
         <label class="w-label">Your Name</label>
-        <input class="w-input" type="text" id="creator-name" placeholder="e.g. Saii" maxlength="25" autocomplete="off"/>
+        <input class="w-input" type="text" id="creator-name" placeholder="e.g. Name" maxlength="25" autocomplete="off"/>
         <label class="w-label">Trip Name</label>
-        <input class="w-input" type="text" id="trip-name-input" placeholder="e.g. Kodaikanal Trip 2026" maxlength="35" autocomplete="off"/>
+        <input class="w-input" type="text" id="trip-name-input" placeholder="e.g. Sakleshpura Trip 2026" maxlength="35" autocomplete="off"/>
         <label class="w-label">Admin Password</label>
         <div style="position:relative">
           <input class="w-input" type="password" id="create-password" placeholder="Enter password to create" autocomplete="new-password" style="padding-right:48px;margin-bottom:14px"/>
