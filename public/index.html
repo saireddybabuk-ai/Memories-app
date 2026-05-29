@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="theme-color" content="#c4700a"/>
+<title>Memories – Trip Photo Sharing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --amber:#c4700a;--amber-l:#f5e6cc;--amber-d:#7a4400;
+  --film:#faf7f2;--white:#fff;--text:#2d1f0a;--muted:#8a7260;
+  --border:rgba(196,112,10,0.18);--radius:12px;
+  --shadow:0 2px 16px rgba(0,0,0,0.07);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);min-height:100dvh;overflow-x:hidden}
+.page{display:none;flex-direction:column;min-height:100dvh}
+.page.active{display:flex}
+
+/* WELCOME */
+.welcome{align-items:center;justify-content:center;padding:30px 24px;gap:0}
+.logo-mark{width:76px;height:76px;background:linear-gradient(135deg,#c4700a,#e8a84c);border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;box-shadow:0 8px 24px rgba(196,112,10,0.3)}
+.logo-mark i{font-size:38px;color:#fff}
+.welcome h1{font-family:'Playfair Display',serif;font-size:34px;color:var(--amber-d);margin-bottom:8px;text-align:center}
+.welcome-sub{font-size:15px;color:var(--muted);text-align:center;margin-bottom:32px;line-height:1.6;max-width:300px}
+.form-box{width:100%;max-width:400px;background:var(--white);border-radius:16px;border:1px solid var(--border);padding:22px;box-shadow:var(--shadow)}
+.form-box h2{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;color:var(--amber-d)}
+.input-g{margin-bottom:13px}
+.input-g label{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.input-g input,.input-g textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);transition:border .2s}
+.input-g input:focus,.input-g textarea:focus{outline:none;border-color:var(--amber);background:var(--white)}
+.input-g textarea{resize:vertical;min-height:70px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;border:none;transition:all .2s;font-family:'DM Sans',sans-serif;width:100%}
+.btn-primary{background:var(--amber);color:#fff}
+.btn-primary:hover{background:var(--amber-d)}
+.btn-primary:active{transform:scale(0.98)}
+.btn-outline{background:transparent;color:var(--amber);border:1.5px solid var(--amber)}
+.btn-outline:hover{background:var(--amber-l)}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);font-size:13px;padding:9px 16px}
+.btn-sm{width:auto;padding:8px 14px;font-size:13px}
+.btn-danger{background:#fee2e2;color:#b91c1c;border:none}
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:13px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.error-msg{background:#fee2e2;color:#b91c1c;border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:12px;display:none}
+.error-msg.show{display:block}
+.success-msg{background:#ecfdf5;color:#065f46;border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:12px;border:1px solid #a7f3d0;display:none}
+.success-msg.show{display:block}
+
+/* APP */
+.app-page{flex:1;display:flex;flex-direction:column;padding-bottom:68px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.topbar-title{font-family:'Playfair Display',serif;font-size:19px;color:var(--amber-d);display:flex;align-items:center;gap:8px}
+.hero{background:linear-gradient(135deg,#7a4400 0%,#c4700a 60%,#e8a84c 100%);padding:28px 20px 24px;color:#fff}
+.hero h2{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px}
+.hero-sub{font-size:13px;opacity:.8;margin-bottom:16px}
+.trip-code-box{background:rgba(255,255,255,.18);border-radius:10px;padding:10px 18px;display:inline-flex;flex-direction:column;align-items:center;gap:3px}
+.trip-code-val{font-size:26px;letter-spacing:7px;font-weight:600}
+.trip-code-lbl{font-size:11px;opacity:.7}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 18px 0}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;box-shadow:var(--shadow)}
+.stat-card strong{display:block;font-family:'Playfair Display',serif;font-size:24px;color:var(--amber-d)}
+.stat-card span{font-size:11px;color:var(--muted)}
+.section{padding:16px 18px}
+.section-title{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.members-scroll{display:flex;gap:14px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.members-scroll::-webkit-scrollbar{display:none}
+.member-chip{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:54px}
+.avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;color:#fff;flex-shrink:0}
+.avatar-sm{width:32px;height:32px;font-size:12px}
+.member-lbl{font-size:11px;color:var(--muted);white-space:nowrap;max-width:54px;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.reel{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.reel::-webkit-scrollbar{display:none}
+.reel-item{width:88px;height:115px;flex-shrink:0;border-radius:8px;overflow:hidden;position:relative;cursor:pointer;background:var(--amber-l)}
+.reel-item img,.reel-item video{width:100%;height:100%;object-fit:cover;display:block}
+.reel-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:4px 5px 3px;font-size:10px;color:#fff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* GALLERY */
+.filter-chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.filter-chips::-webkit-scrollbar{display:none}
+.chip{padding:6px 13px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--muted);white-space:nowrap;transition:all .15s;flex-shrink:0}
+.chip.active{background:var(--amber);color:#fff;border-color:var(--amber)}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.photo-cell{aspect-ratio:1;background:var(--amber-l);border-radius:3px;overflow:hidden;cursor:pointer;position:relative}
+.photo-cell img,.photo-cell video{width:100%;height:100%;object-fit:cover;display:block}
+.photo-meta{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.5));padding:5px 5px 3px;font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vid-badge{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.6);border-radius:4px;padding:2px 5px;font-size:9px;color:#fff}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-state i{font-size:44px;display:block;margin-bottom:12px;color:var(--amber-l)}
+.empty-state p{font-size:14px}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--white)}
+.upload-zone:hover,.upload-zone.drag{background:var(--amber-l);border-color:var(--amber)}
+.upload-zone i{font-size:44px;color:var(--amber);display:block;margin-bottom:10px}
+.upload-zone h3{font-size:16px;font-weight:500;margin-bottom:5px}
+.upload-zone p{font-size:13px;color:var(--muted)}
+.preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:14px 0}
+.preview-cell{aspect-ratio:1;border-radius:6px;overflow:hidden;background:var(--amber-l);position:relative}
+.preview-cell img,.preview-cell video{width:100%;height:100%;object-fit:cover;display:block}
+.preview-remove{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);border:none;border-radius:50%;width:20px;height:20px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+.progress-bar{height:5px;background:var(--amber-l);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:var(--amber);border-radius:3px;transition:width .3s}
+.info-box{background:var(--amber-l);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--amber-d);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* MEMORIES */
+.member-section{background:var(--white);border-radius:12px;border:1px solid var(--border);margin-bottom:12px;overflow:hidden}
+.member-section-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.member-section-head strong{font-size:14px;font-weight:500}
+.member-section-head span{font-size:12px;color:var(--muted)}
+.member-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px}
+.mini-cell{aspect-ratio:1;overflow:hidden;cursor:pointer;background:var(--amber-l)}
+.mini-cell img,.mini-cell video{width:100%;height:100%;object-fit:cover;display:block}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.lightbox.open{display:flex}
+#lb-img{max-width:100%;max-height:72dvh;border-radius:8px;object-fit:contain}
+#lb-vid{max-width:100%;max-height:72dvh;border-radius:8px}
+.lb-info{color:#fff;margin-top:14px;text-align:center;width:100%}
+.lb-info strong{font-size:14px;display:block}
+.lb-info p{font-size:12px;opacity:.6;margin-top:3px}
+.lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:40px;height:40px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lb-prev,.lb-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;border-radius:50%;width:40px;height:40px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lb-prev{left:12px}.lb-next{right:12px}
+.lb-actions{display:flex;gap:10px;margin-top:14px}
+.lb-actions button{background:rgba(255,255,255,.12);border:none;border-radius:8px;color:#fff;padding:8px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 0;cursor:pointer;color:var(--muted);font-size:10px;gap:2px;transition:color .2s;position:relative}
+.nav-item.active{color:var(--amber)}
+.nav-item i{font-size:23px}
+.nav-badge{position:absolute;top:6px;right:calc(50% - 16px);background:var(--amber);color:#fff;border-radius:10px;padding:1px 5px;font-size:9px;font-weight:600;min-width:16px;text-align:center}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(250,247,242,.85);z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(4px)}
+.loading-overlay.show{display:flex}
+.spinner{width:40px;height:40px;border:3px solid var(--amber-l);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay p{font-size:14px;color:var(--muted)}
+
+/* ADMIN BADGE */
+.crown{font-size:12px}
+.tag{display:inline-flex;align-items:center;gap:4px;background:var(--amber-l);color:var(--amber-d);border-radius:16px;padding:3px 10px;font-size:12px;font-weight:500}
+
+/* PWA install prompt */
+.pwa-banner{background:var(--amber-d);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.pwa-banner button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <p id="loading-text">Loading...</p>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" onclick="closeLb()"><i class="ti ti-x"></i></button>
+  <button class="lb-prev" onclick="lbNav(-1)"><i class="ti ti-chevron-left"></i></button>
+  <button class="lb-next" onclick="lbNav(1)"><i class="ti ti-chevron-right"></i></button>
+  <img id="lb-img" src="" alt="" style="display:none"/>
+  <video id="lb-vid" controls style="display:none"></video>
+  <div class="lb-info">
+    <strong id="lb-name"></strong>
+    <p id="lb-caption"></p>
+    <p id="lb-time"></p>
+  </div>
+  <div class="lb-actions">
+    <button onclick="downloadCurrent()"><i class="ti ti-download"></i> Download</button>
+    <button onclick="shareCurrent()"><i class="ti ti-share"></i> Share</button>
+  </div>
+</div>
+
+<!-- WELCOME PAGE -->
+<div class="page active" id="page-welcome" style="flex-direction:column">
+  <div class="welcome" style="display:flex">
+    <div class="logo-mark"><i class="ti ti-camera-heart" aria-hidden="true"></i></div>
+    <h1>Memories</h1>
+    <p class="welcome-sub">Capture & share your trip moments with everyone — original quality, always.</p>
+
+    <div class="form-box" style="margin-bottom:14px">
+      <h2>✨ Create a Trip</h2>
+      <div id="create-error" class="error-msg"></div>
+      <div class="input-g">
+        <label>Your Name</label>
+        <input type="text" id="creator-name" placeholder="e.g. Saii" maxlength="25"/>
+      </div>
+      <div class="input-g">
+        <label>Trip Name</label>
+        <input type="text" id="trip-name-input" placeholder="e.g. Kodaikanal Trip 2026" maxlength="35"/>
+      </div>
+      <button class="btn btn-primary" onclick="createTrip()"><i class="ti ti-rocket"></i> Create Trip Album</button>
+    </div>
+
+    <div class="form-box">
+      <h2>🚪 Join a Trip</h2>
+      <div id="join-error" class="error-msg"></div>
+      <div class="input-g">
+        <label>Trip Code</label>
+        <input type="text" id="join-code" placeholder="ABC123" maxlength="6" style="text-transform:uppercase;letter-spacing:5px;font-size:20px;text-align:center"/>
+      </div>
+      <div class="input-g">
+        <label>Your Name</label>
+        <input type="text" id="joiner-name" placeholder="Your name" maxlength="25"/>
+      </div>
+      <button class="btn btn-outline" onclick="joinTrip()"><i class="ti ti-door-enter"></i> Join Trip</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP (shown after join/create) -->
+<div class="page" id="page-app">
+  <div class="app-page">
+
+    <!-- HOME TAB -->
+    <div class="tab-content active" id="tab-home">
+      <div class="hero">
+        <h2 id="hero-trip-name">Trip</h2>
+        <div class="hero-sub" id="hero-date"></div>
+        <div class="trip-code-box">
+          <div class="trip-code-val" id="hero-code"></div>
+          <div class="trip-code-lbl">Share this code with friends</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><strong id="stat-photos">0</strong><span>Photos</span></div>
+        <div class="stat-card"><strong id="stat-members">0</strong><span>Members</span></div>
+        <div class="stat-card"><strong id="stat-videos">0</strong><span>Videos</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Members</div>
+        <div class="members-scroll" id="members-strip"></div>
+      </div>
+      <div class="section" style="padding-top:0">
+        <div class="section-title">Latest Uploads</div>
+        <div class="reel" id="home-reel"></div>
+      </div>
+    </div>
+
+    <!-- GALLERY TAB -->
+    <div class="tab-content" id="tab-gallery" style="display:none">
+      <div class="topbar">
+        <span class="topbar-title"><i class="ti ti-photo"></i> Gallery</span>
+        <span class="tag" id="gallery-count">0 items</span>
+      </div>
+      <div class="section">
+        <div class="filter-chips" id="filter-chips">
+          <div class="chip active" onclick="filterBy('all',this)">Everyone</div>
+        </div>
+        <div class="photo-grid" id="photo-grid"></div>
+      </div>
+    </div>
+
+    <!-- UPLOAD TAB -->
+    <div class="tab-content" id="tab-upload" style="display:none">
+      <div class="topbar"><span class="topbar-title"><i class="ti ti-cloud-upload"></i> Upload</span></div>
+      <div class="section">
+        <div class="info-box"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i> Photos & videos are uploaded in original quality. Max 100MB per file.</div>
+        <div id="success-upload" class="success-msg"></div>
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <i class="ti ti-cloud-upload" aria-hidden="true"></i>
+          <h3>Tap to select files</h3>
+          <p>Photos & videos · JPG, PNG, HEIC, MP4, MOV</p>
+        </div>
+        <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none" onchange="handleFiles(this.files)"/>
+        <div id="preview-grid" class="preview-grid" style="display:none"></div>
+        <div id="upload-form" style="display:none;margin-top:4px">
+          <div class="input-g">
+            <label>Caption (optional)</label>
+            <textarea id="caption-input" placeholder="Describe this moment..."></textarea>
+          </div>
+          <div class="progress-bar" id="progress-bar" style="display:none"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+          <button class="btn btn-primary" onclick="doUpload()" style="margin-top:10px" id="upload-btn">
+            <i class="ti ti-upload"></i> Share with Group
+          </button>
+          <button class="btn btn-ghost" onclick="clearUpload()" style="margin-top:8px">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMORIES TAB -->
+    <div class="tab-content" id="tab-memories" style="display:none">
+      <div class="topbar"><span class="topbar-title"><i class="ti ti-heart"></i> Memories</span></div>
+      <div class="section">
+        <div class="section-title">Highlights Reel</div>
+        <div class="reel" id="mem-reel" style="margin-bottom:18px"></div>
+        <div class="section-title">By Member</div>
+        <div id="by-member"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="showTab('home')"><i class="ti ti-home"></i>Home</div>
+    <div class="nav-item" id="nav-gallery" onclick="showTab('gallery')"><i class="ti ti-photo"></i>Gallery</div>
+    <div class="nav-item" id="nav-upload" onclick="showTab('upload')"><i class="ti ti-circle-plus"></i>Upload</div>
+    <div class="nav-item" id="nav-memories" onclick="showTab('memories')"><i class="ti ti-heart"></i>Memories</div>
+  </nav>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+const COLORS=['#7a4400','#1D9E75','#378ADD','#D4537E','#639922','#BA7517','#D85A30','#533AB7','#0F6E56','#185FA5','#993556','#3B6D11'];
+let S={code:'',myName:'',isAdmin:false,trip:null,pendingFiles:[],currentLbPhotos:[],currentLbIdx:0,filterMember:'all',pollTimer:null};
+
+// ── Utils ──────────────────────────────────────────────
+function ini(n){return (n||'?').split(' ').map(x=>x[0]||'').join('').toUpperCase().slice(0,2)}
+function col(n){let h=0;for(let c of(n||''))h=(h<<5)-h+c.charCodeAt(0);return COLORS[Math.abs(h)%COLORS.length]}
+function fmt(iso){return new Date(iso).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+function show(id){document.getElementById(id).style.display='flex'}
+function hide(id){document.getElementById(id).style.display='none'}
+function loading(on,text='Loading...'){
+  document.getElementById('loading').classList.toggle('show',on);
+  document.getElementById('loading-text').textContent=text;
+}
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),4000)}
+function showSuccess(id,msg){const e=document.getElementById(id);e.textContent=msg;e.classList.add('show')}
+
+// ── API helpers ────────────────────────────────────────
+async function api(method,path,body){
+  const opts={method,headers:{}};
+  if(body&&!(body instanceof FormData)){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body);}
+  else if(body) opts.body=body;
+  const r=await fetch('/api'+path,opts);
+  const data=await r.json();
+  if(!r.ok) throw new Error(data.error||'Request failed');
+  return data;
+}
+
+// ── Welcome ────────────────────────────────────────────
+async function createTrip(){
+  const creatorName=document.getElementById('creator-name').value.trim();
+  const tripName=document.getElementById('trip-name-input').value.trim();
+  if(!creatorName) return showErr('create-error','Please enter your name');
+  if(!tripName) return showErr('create-error','Please enter a trip name');
+  try{
+    loading(true,'Creating your trip album...');
+    const d=await api('POST','/trip/create',{tripName,creatorName});
+    S.code=d.code; S.myName=d.creatorName; S.isAdmin=true;
+    await loadApp();
+  }catch(e){showErr('create-error',e.message);}
+  finally{loading(false);}
+}
+
+async function joinTrip(){
+  const code=document.getElementById('join-code').value.trim().toUpperCase();
+  const memberName=document.getElementById('joiner-name').value.trim();
+  if(!code||code.length!==6) return showErr('join-error','Please enter the 6-character trip code');
+  if(!memberName) return showErr('join-error','Please enter your name');
+  try{
+    loading(true,'Joining trip...');
+    const d=await api('POST','/trip/join',{code,memberName});
+    S.code=d.code; S.myName=d.memberName; S.isAdmin=false;
+    await loadApp();
+  }catch(e){showErr('join-error',e.message);}
+  finally{loading(false);}
+}
+
+async function loadApp(){
+  const trip=await api('GET',`/trip/${S.code}`);
+  S.trip=trip;
+  const member=trip.members.find(m=>m.name.toLowerCase()===S.myName.toLowerCase());
+  if(member) S.isAdmin=member.isAdmin;
+  document.getElementById('page-welcome').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+  renderAll();
+  startPolling();
+}
+
+// ── Polling ────────────────────────────────────────────
+function startPolling(){
+  if(S.pollTimer) clearInterval(S.pollTimer);
+  S.pollTimer=setInterval(async()=>{
+    try{
+      const trip=await api('GET',`/trip/${S.code}`);
+      if(JSON.stringify(trip)!==JSON.stringify(S.trip)){S.trip=trip;renderAll();}
+    }catch(e){}
+  },5000);
+}
+
+// ── Render ─────────────────────────────────────────────
+function renderAll(){
+  const t=S.trip;
+  document.getElementById('hero-trip-name').textContent=t.name;
+  document.getElementById('hero-code').textContent=t.code;
+  document.getElementById('hero-date').textContent=new Date(t.createdAt).toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const imgs=t.photos.filter(p=>p.type==='image').length;
+  const vids=t.photos.filter(p=>p.type==='video').length;
+  document.getElementById('stat-photos').textContent=imgs;
+  document.getElementById('stat-members').textContent=t.members.length;
+  document.getElementById('stat-videos').textContent=vids;
+  renderMembers();
+  renderHomeReel();
+  renderGallery();
+  renderMemories();
+  updateFilterChips();
+}
+
+function renderMembers(){
+  const s=document.getElementById('members-strip');
+  s.innerHTML=S.trip.members.map(m=>`
+    <div class="member-chip">
+      <div class="avatar" style="background:${col(m.name)}">${ini(m.name)}</div>
+      <span class="member-lbl">${m.name}${m.isAdmin?' 👑':''}</span>
+    </div>`).join('');
+}
+
+function renderHomeReel(){
+  const reel=document.getElementById('home-reel');
+  const photos=[...S.trip.photos].reverse().slice(0,12);
+  if(!photos.length){reel.innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px 0">No uploads yet — be the first!</p>';return;}
+  reel.innerHTML=photos.map((p,i)=>{
+    const idx=S.trip.photos.indexOf(p);
+    return`<div class="reel-item" onclick="openLb(${idx},[...Array(${S.trip.photos.length}).keys()])">
+      ${p.type==='video'?`<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`:`<img src="${p.url}" loading="lazy"/>`}
+      <div class="reel-label">${p.uploader}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateFilterChips(){
+  const chips=document.getElementById('filter-chips');
+  const existing=new Set([...chips.querySelectorAll('.chip')].map(c=>c.dataset.val));
+  S.trip.members.forEach(m=>{
+    if(!existing.has(m.name)){
+      const c=document.createElement('div');
+      c.className='chip';c.dataset.val=m.name;c.textContent=m.name;
+      c.onclick=function(){filterBy(m.name,this)};
+      chips.appendChild(c);
+    }
+  });
+}
+
+let currentFilter='all';
+function filterBy(val,el){
+  currentFilter=val;
+  document.querySelectorAll('.filter-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderGallery();
+}
+
+function renderGallery(){
+  const filtered=currentFilter==='all'?S.trip.photos:S.trip.photos.filter(p=>p.uploader===currentFilter);
+  document.getElementById('gallery-count').textContent=filtered.length+' items';
+  const grid=document.getElementById('photo-grid');
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-photo-off"></i><p>No photos yet</p></div>`;
+    return;
+  }
+  const allIdxs=filtered.map(p=>S.trip.photos.indexOf(p));
+  grid.innerHTML=filtered.map((p,i)=>`
+    <div class="photo-cell" onclick="openLb(${allIdxs[i]},${JSON.stringify(allIdxs)})">
+      ${p.type==='video'?`<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video><div class="vid-badge">▶ Video</div>`:`<img src="${p.url}" loading="lazy"/>`}
+      <div class="photo-meta">${p.uploader}</div>
+    </div>`).join('');
+}
+
+function renderMemories(){
+  const reel=document.getElementById('mem-reel');
+  if(!S.trip.photos.length){reel.innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px 0">Upload photos to see highlights!</p>';}
+  else{
+    reel.innerHTML=[...S.trip.photos].reverse().map((p,i)=>{
+      const idx=S.trip.photos.indexOf(p);
+      return`<div class="reel-item" onclick="openLb(${idx},[...Array(${S.trip.photos.length}).keys()])">
+        ${p.type==='video'?`<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`:`<img src="${p.url}" loading="lazy"/>`}
+        <div class="reel-label">${p.uploader}</div>
+      </div>`;
+    }).join('');
+  }
+  const bm=document.getElementById('by-member');
+  bm.innerHTML=S.trip.members.map(m=>{
+    const mPhotos=S.trip.photos.filter(p=>p.uploader===m.name);
+    return`<div class="member-section">
+      <div class="member-section-head">
+        <div class="avatar avatar-sm" style="background:${col(m.name)}">${ini(m.name)}</div>
+        <div><strong>${m.name}${m.isAdmin?' 👑':''}</strong> <span>${mPhotos.length} upload${mPhotos.length!==1?'s':''}</span></div>
+      </div>
+      <div class="member-mini-grid">
+        ${mPhotos.length?mPhotos.slice(-8).map(p=>{
+          const idx=S.trip.photos.indexOf(p);
+          const idxs=mPhotos.map(x=>S.trip.photos.indexOf(x));
+          return`<div class="mini-cell" onclick="openLb(${idx},${JSON.stringify(idxs)})">${p.type==='video'?`<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`:`<img src="${p.url}" loading="lazy"/>`}</div>`;
+        }).join(''):`<p style="grid-column:1/-1;text-align:center;padding:14px;color:var(--muted);font-size:12px">No uploads yet</p>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Upload ─────────────────────────────────────────────
+let pendingFiles=[];
+
+function handleFiles(files){
+  pendingFiles=[...files];
+  const grid=document.getElementById('preview-grid');
+  grid.style.display='grid';
+  grid.innerHTML=pendingFiles.map((f,i)=>{
+    const url=URL.createObjectURL(f);
+    const isV=f.type.startsWith('video/');
+    return`<div class="preview-cell">
+      ${isV?`<video src="${url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`:`<img src="${url}"/>`}
+      <button class="preview-remove" onclick="removeFile(${i})"><i class="ti ti-x" style="font-size:10px"></i></button>
+    </div>`;
+  }).join('');
+  document.getElementById('upload-form').style.display='block';
+}
+
+function removeFile(i){
+  pendingFiles.splice(i,1);
+  if(!pendingFiles.length){clearUpload();return;}
+  handleFiles(pendingFiles);
+}
+
+function clearUpload(){
+  pendingFiles=[];
+  document.getElementById('preview-grid').style.display='none';
+  document.getElementById('preview-grid').innerHTML='';
+  document.getElementById('upload-form').style.display='none';
+  document.getElementById('caption-input').value='';
+  document.getElementById('file-input').value='';
+  document.getElementById('success-upload').classList.remove('show');
+}
+
+async function doUpload(){
+  if(!pendingFiles.length) return;
+  const caption=document.getElementById('caption-input').value.trim();
+  const fd=new FormData();
+  pendingFiles.forEach(f=>fd.append('files',f));
+  fd.append('uploaderName',S.myName);
+  fd.append('caption',caption);
+  const btn=document.getElementById('upload-btn');
+  const pb=document.getElementById('progress-bar');
+  const pf=document.getElementById('progress-fill');
+  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2" style="animation:spin .8s linear infinite"></i> Uploading...';
+  pb.style.display='block';
+  let progress=0;
+  const tick=setInterval(()=>{progress=Math.min(progress+8,90);pf.style.width=progress+'%';},200);
+  try{
+    const d=await api('POST',`/trip/${S.code}/upload`,fd);
+    clearInterval(tick);pf.style.width='100%';
+    setTimeout(()=>{pb.style.display='none';pf.style.width='0%';},600);
+    showSuccess('success-upload',`✅ ${d.uploaded} file${d.uploaded!==1?'s':''} shared with the group!`);
+    pendingFiles=[];
+    document.getElementById('preview-grid').style.display='none';
+    document.getElementById('upload-form').style.display='none';
+    document.getElementById('caption-input').value='';
+    document.getElementById('file-input').value='';
+    const trip=await api('GET',`/trip/${S.code}`);
+    S.trip=trip; renderAll();
+    setTimeout(()=>showTab('gallery'),1500);
+  }catch(e){
+    clearInterval(tick);
+    showErr('success-upload',e.message);
+  }finally{
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-upload"></i> Share with Group';
+  }
+}
+
+// Drag & drop
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');handleFiles(e.dataTransfer.files)});
+
+// ── Lightbox ───────────────────────────────────────────
+function openLb(idx, idxArr){
+  S.currentLbPhotos=idxArr;
+  S.currentLbIdx=idxArr.indexOf(idx);
+  showLbSlide();
+  document.getElementById('lightbox').classList.add('open');
+}
+function showLbSlide(){
+  const p=S.trip.photos[S.currentLbPhotos[S.currentLbIdx]];
+  if(!p)return;
+  const img=document.getElementById('lb-img'),vid=document.getElementById('lb-vid');
+  vid.pause();
+  if(p.type==='video'){img.style.display='none';vid.style.display='block';vid.src=p.url;}
+  else{vid.style.display='none';img.style.display='block';img.src=p.url;}
+  document.getElementById('lb-name').textContent='📸 '+p.uploader;
+  document.getElementById('lb-caption').textContent=p.caption||'';
+  document.getElementById('lb-time').textContent=fmt(p.uploadedAt);
+}
+function lbNav(d){
+  const n=S.currentLbIdx+d;
+  if(n<0||n>=S.currentLbPhotos.length)return;
+  S.currentLbIdx=n; showLbSlide();
+}
+function closeLb(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lb-vid').pause();
+}
+function downloadCurrent(){
+  const p=S.trip.photos[S.currentLbPhotos[S.currentLbIdx]];
+  if(!p)return;
+  const a=document.createElement('a');a.href=p.url;a.download=p.originalName||'memory';a.click();
+}
+function shareCurrent(){
+  const p=S.trip.photos[S.currentLbPhotos[S.currentLbIdx]];
+  if(!p)return;
+  if(navigator.share){navigator.share({title:'Memory from '+S.trip.name,url:window.location.origin+p.url});}
+  else{navigator.clipboard.writeText(window.location.origin+p.url);alert('Link copied!');}
+}
+// swipe support
+let lbTouchX=null;
+document.getElementById('lightbox').addEventListener('touchstart',e=>lbTouchX=e.touches[0].clientX);
+document.getElementById('lightbox').addEventListener('touchend',e=>{
+  if(lbTouchX===null)return;
+  const dx=e.changedTouches[0].clientX-lbTouchX;
+  if(Math.abs(dx)>50){lbNav(dx<0?1:-1);}
+  lbTouchX=null;
+});
+
+// ── Tabs ───────────────────────────────────────────────
+function showTab(name){
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+name).classList.add('active');
+  if(name==='memories') renderMemories();
+  if(name==='gallery'){renderGallery();updateFilterChips();}
+}
+
+// keyboard for lightbox
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('lightbox').classList.contains('open'))return;
+  if(e.key==='ArrowRight')lbNav(1);
+  if(e.key==='ArrowLeft')lbNav(-1);
+  if(e.key==='Escape')closeLb();
+});
+
+// ── code input uppercase ───────────────────────────────
+document.getElementById('join-code').addEventListener('input',function(){this.value=this.value.toUpperCase()});
+</script>
+</body>
+</html>
