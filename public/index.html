@@ -248,10 +248,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
   <div class="rem-sheet">
     <h3>Remove member?</h3>
     <p id="rem-modal-name"></p>
-    <div class="warn">⚠️ This will remove them from the trip. Their uploaded photos will remain.</div>
+    <div class="warn">⚠️ They will be <strong>banned</strong> from rejoining or uploading with the same name. You can unban them later from the Members section.</div>
     <div class="rem-btns">
       <button class="rem-cancel" onclick="cancelRemove()">Cancel</button>
-      <button class="rem-confirm" onclick="confirmRemove()"><i class="ti ti-user-minus"></i> Remove</button>
+      <button class="rem-confirm" onclick="confirmRemove()"><i class="ti ti-user-minus"></i> Remove & Ban</button>
     </div>
   </div>
 </div>
@@ -536,8 +536,8 @@ function renderAll(){
 let memberManageMode=false;
 function toggleMemberManage(){
   memberManageMode=!memberManageMode;
-  document.getElementById('members-strip').classList.toggle('admin-members',memberManageMode);
-  document.getElementById('manage-members-btn').textContent=memberManageMode?'✓ Done':'👥 Manage';
+  const btn=document.getElementById('manage-members-btn');
+  if(btn) btn.innerHTML=memberManageMode?'✓ Done':'<i class="ti ti-users-minus" style="font-size:13px;vertical-align:-2px"></i> Manage';
   renderMembers();
 }
 
@@ -557,6 +557,31 @@ function renderMembers(){
       <span class="member-lbl">${m.name}${m.isAdmin?' 👑':''}</span>
     </div>`;
   }).join('');
+
+  // Show banned list only in admin manage mode
+  let bannedSection=document.getElementById('banned-section');
+  if(!bannedSection){
+    bannedSection=document.createElement('div');
+    bannedSection.id='banned-section';
+    s.parentElement.appendChild(bannedSection);
+  }
+  const banned=S.trip.banned||[];
+  if(S.isAdmin && memberManageMode && banned.length){
+    bannedSection.innerHTML=`
+      <div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:500;color:#b91c1c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">🚫 Banned (${banned.length})</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${banned.map(name=>`
+            <div style="display:flex;align-items:center;gap:6px;background:#fee2e2;border-radius:20px;padding:5px 12px 5px 5px;border:1px solid #fecaca">
+              <div style="width:28px;height:28px;border-radius:50%;background:#dc2626;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:500">${ini(name)}</div>
+              <span style="font-size:13px;color:#991b1b">${name}</span>
+              <button onclick="unbanMember('${name.replace(/'/g,"\\'")}')" style="background:#dc2626;border:none;border-radius:10px;color:#fff;font-size:11px;padding:2px 7px;cursor:pointer;font-family:'DM Sans',sans-serif">Unban</button>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  } else {
+    bannedSection.innerHTML='';
+  }
 }
 
 function renderHomeReel(){
@@ -628,6 +653,16 @@ function renderGallery(){
 function cellTap(e,idx,idxArr){
   // in admin mode, tapping the cell (not the del btn) still opens lightbox
   openLb(idx,idxArr);
+}
+
+async function unbanMember(name){
+  try{
+    loading(true,'Unbanning...');
+    await api('POST',`/trip/${S.code}/unban`,{memberName:name});
+    const trip=await api('GET',`/trip/${S.code}`);
+    S.trip=trip; renderAll();
+  }catch(e){alert('Could not unban: '+e.message);}
+  finally{loading(false);}
 }
 
 let pendingRemoveName=null;
