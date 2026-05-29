@@ -311,6 +311,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
         <input class="w-input w-input-code" type="text" id="join-code" placeholder="ABC123" maxlength="6" autocomplete="off" autocorrect="off" spellcheck="false"/>
         <label class="w-label">Your Name</label>
         <input class="w-input" type="text" id="joiner-name" placeholder="Your name" maxlength="25" autocomplete="off"/>
+        <div id="join-password-wrap" style="display:none">
+          <label class="w-label" style="color:#e8a84c">Admin Password Required</label>
+          <div style="position:relative">
+            <input class="w-input" type="password" id="join-password" placeholder="Enter admin password" autocomplete="off" style="padding-right:48px;margin-bottom:14px;border-color:rgba(232,168,76,0.5)"/>
+            <button onclick="togglePwd('join-password',this)" style="position:absolute;right:14px;top:14px;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:0;font-size:18px"><i class="ti ti-eye"></i></button>
+          </div>
+        </div>
         <button class="w-btn w-btn-join" onclick="joinTrip()">
           <i class="ti ti-door-enter" aria-hidden="true"></i> Join Trip
         </button>
@@ -482,14 +489,24 @@ async function createTrip(){
 async function joinTrip(){
   const code=document.getElementById('join-code').value.trim().toUpperCase();
   const memberName=document.getElementById('joiner-name').value.trim();
+  const password=document.getElementById('join-password').value;
   if(!code||code.length!==6) return showErr('join-error','Please enter the 6-character trip code');
   if(!memberName) return showErr('join-error','Please enter your name');
   try{
     loading(true,'Joining trip...');
-    const d=await api('POST','/trip/join',{code,memberName});
-    S.code=d.code; S.myName=d.memberName; S.isAdmin=false;
+    const d=await api('POST','/trip/join',{code,memberName,password});
+    S.code=d.code; S.myName=d.memberName; S.isAdmin=d.isAdmin||false;
     await loadApp();
-  }catch(e){showErr('join-error',e.message);}
+  }catch(e){
+    if(e.message.includes('requiresPassword')||e.message.includes('admin password')||e.message.includes('organiser')){
+      // Show password field
+      document.getElementById('join-password-wrap').style.display='block';
+      document.getElementById('join-password').focus();
+      showErr('join-error',e.message.replace(' Enter the admin password to continue.','') + ' — enter the admin password below.');
+    } else {
+      showErr('join-error',e.message);
+    }
+  }
   finally{loading(false);}
 }
 
