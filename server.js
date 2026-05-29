@@ -104,6 +104,19 @@ app.post('/api/trip/:code/upload', upload.array('files', 20), (req, res) => {
   res.json({ uploaded: added.length, photos: added });
 });
 
+// Remove member (admin only)
+app.delete('/api/trip/:code/member', (req, res) => {
+  const trip = db.trips[req.params.code?.toUpperCase()];
+  if (!trip) return res.status(404).json({ error: 'Trip not found' });
+  const { memberName } = req.body;
+  const idx = trip.members.findIndex(m => m.name.toLowerCase() === memberName?.toLowerCase());
+  if (idx === -1) return res.status(404).json({ error: 'Member not found' });
+  if (trip.members[idx].isAdmin) return res.status(403).json({ error: 'Cannot remove the admin' });
+  trip.members.splice(idx, 1);
+  saveDB();
+  res.json({ removed: true });
+});
+
 // Delete photo (admin only)
 app.delete('/api/trip/:code/photo/:photoId', (req, res) => {
   const trip = db.trips[req.params.code?.toUpperCase()];
