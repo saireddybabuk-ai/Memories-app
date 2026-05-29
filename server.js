@@ -66,9 +66,21 @@ app.post('/api/trip/create', (req, res) => {
 
 // Join trip
 app.post('/api/trip/join', (req, res) => {
-  const { code, memberName } = req.body;
+  const { code, memberName, password } = req.body;
   const trip = db.trips[code?.toUpperCase()];
   if (!trip) return res.status(404).json({ error: 'Trip not found. Check the code.' });
+
+  // If the name matches the admin, require the admin password
+  const adminMember = trip.members.find(m => m.isAdmin);
+  if (adminMember && adminMember.name.toLowerCase() === memberName?.toLowerCase()) {
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'memories2026';
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ error: 'This name belongs to the trip organiser. Enter the admin password to continue.', requiresPassword: true });
+    }
+    // Admin re-login — return without re-adding to members
+    return res.json({ code: trip.code, tripName: trip.name, memberName, isAdmin: true });
+  }
+
   const banned = (trip.banned || []).map(b => b.toLowerCase());
   if (banned.includes(memberName?.toLowerCase())) {
     return res.status(403).json({ error: 'You have been removed from this trip by the organiser and cannot rejoin.' });
