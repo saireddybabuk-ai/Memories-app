@@ -13,8 +13,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ── MongoDB ────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(e => console.error('❌ MongoDB:', e.message));
+  .then(() => {
+    console.log('✅ MongoDB connected');
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+  })
+  .catch(e => {
+    console.error('❌ MongoDB connection failed:', e.message);
+    process.exit(1);
+  });
 
 app.use('/api', (req, res, next) => {
   if (mongoose.connection.readyState !== 1)
@@ -185,6 +192,3 @@ app.delete('/api/trip/:code/photo/:photoId', async (req, res) => {
 app.get('/api/health', (req, res) => res.json({ ok: true, db: mongoose.connection.readyState }));
 
 app.get('/{*path}', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
