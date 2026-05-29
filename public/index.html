@@ -18,12 +18,12 @@
   --border:rgba(196,112,10,0.18);--radius:12px;
   --shadow:0 2px 16px rgba(0,0,0,0.07);
 }
-body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);min-height:100dvh;overflow-x:hidden}
-.page{display:none;flex-direction:column;min-height:100dvh}
+body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);min-height:100dvh;overflow-x:hidden;width:100%}
+.page{display:none;flex-direction:column;min-height:100dvh;width:100%;overflow-x:hidden}
 .page.active{display:flex}
 
 /* WELCOME */
-.welcome{align-items:stretch;justify-content:flex-start;padding:0;gap:0;background:#0d0805;min-height:100dvh}
+.welcome{align-items:stretch;justify-content:flex-start;padding:0;gap:0;background:#0d0805;min-height:100dvh;flex-direction:column;width:100%;overflow-x:hidden}
 .w-hero{position:relative;height:52dvh;min-height:280px;background:linear-gradient(160deg,#3d1a02 0%,#7a3800 40%,#c4700a 75%,#e8a84c 100%);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 24px 32px;flex-shrink:0}
 .w-hero-circles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .w-hero-circles span{position:absolute;border-radius:50%;opacity:.12}
@@ -209,7 +209,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
 
 <!-- WELCOME PAGE -->
 <div class="page active" id="page-welcome" style="flex-direction:column">
-  <div class="welcome" style="display:flex">
+  <div class="welcome">
 
     <!-- Hero section -->
     <div class="w-hero">
