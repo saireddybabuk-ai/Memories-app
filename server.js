@@ -11,24 +11,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── MongoDB ────────────────────────────────────────────
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅ MongoDB connected');
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-  })
-  .catch(e => {
-    console.error('❌ MongoDB connection failed:', e.message);
-    process.exit(1);
-  });
-
-app.use('/api', (req, res, next) => {
-  if (mongoose.connection.readyState !== 1)
-    return res.status(503).json({ error: 'Database connecting, please retry in a few seconds.' });
-  next();
-});
-
 // ── Schemas ────────────────────────────────────────────
 const photoSchema = new mongoose.Schema({
   id: String, publicId: String, originalName: String,
@@ -50,7 +32,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Use memory storage — upload buffer directly to Cloudinary
+// ── Multer memory storage ──────────────────────────────
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 100 * 1024 * 1024 },
@@ -69,6 +51,9 @@ function uploadToCloudinary(buffer, mimetype, folder) {
 }
 
 // ── ROUTES ─────────────────────────────────────────────
+
+// Health — always works even if DB down
+app.get('/api/health', (req, res) => res.json({ ok: true, db: mongoose.connection.readyState }));
 
 // Create trip
 app.post('/api/trip/create', async (req, res) => {
@@ -127,14 +112,12 @@ app.post('/api/trip/:code/upload', upload.array('files', 20), async (req, res) =
     if ((trip.banned||[]).map(b=>b.toLowerCase()).includes(uploaderName?.toLowerCase()))
       return res.status(403).json({ error: 'You have been removed from this trip and cannot upload.' });
     if (!req.files?.length) return res.status(400).json({ error: 'No files' });
-
     const added = [];
     for (const f of req.files) {
       const result = await uploadToCloudinary(f.buffer, f.mimetype, `memories-app/${req.params.code}`);
       added.push({
-        id: uuidv4(), publicId: result.public_id,
-        originalName: f.originalname, url: result.secure_url,
-        type: f.mimetype.startsWith('video/') ? 'video' : 'image',
+        id: uuidv4(), publicId: result.public_id, originalName: f.originalname,
+        url: result.secure_url, type: f.mimetype.startsWith('video/') ? 'video' : 'image',
         uploader: uploaderName, caption: caption || '',
         uploadedAt: new Date().toISOString(), size: f.size
       });
@@ -155,7 +138,7 @@ app.delete('/api/trip/:code/member', async (req, res) => {
     if (idx === -1) return res.status(404).json({ error: 'Member not found' });
     if (trip.members[idx].isAdmin) return res.status(403).json({ error: 'Cannot remove the admin' });
     trip.members.splice(idx, 1);
-    if (!trip.banned.map(b=>b.toLowerCase()).includes(memberName.toLowerCase()))
+    if (!(trip.banned||[]).map(b=>b.toLowerCase()).includes(memberName.toLowerCase()))
       trip.banned.push(memberName.toLowerCase());
     await trip.save();
     res.json({ removed: true });
@@ -188,7 +171,16 @@ app.delete('/api/trip/:code/photo/:photoId', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Health
-app.get('/api/health', (req, res) => res.json({ ok: true, db: mongoose.connection.readyState }));
-
 app.get('/{*path}', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
+// ── Start server THEN connect DB ───────────────────────
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  const uri = process.env.MONGO_URI;
+  if (!uri) { console.error('⚠️  MONGO_URI not set'); return; }
+  console.log('Connecting to MongoDB...');
+  mongoose.connect(uri, { serverSelectionTimeoutMS: 30000 })
+    .then(() => console.log('✅ MongoDB connected'))
+    .catch(e => console.error('❌ MongoDB failed:', e.message));
+});
