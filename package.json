@@ -11,7 +11,6 @@
     "express": "^5.2.1",
     "mongoose": "^8.14.1",
     "multer": "^2.1.1",
-    "multer-storage-cloudinary": "^4.0.0",
     "uuid": "^14.0.0"
   }
 }
