@@ -120,6 +120,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
 .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
 .empty-state i{font-size:44px;display:block;margin-bottom:12px;color:var(--amber-l)}
 .empty-state p{font-size:14px}
+/* Admin delete button on photo cell */
+.admin-del{position:absolute;top:5px;left:5px;background:rgba(185,28,28,.85);border:none;border-radius:6px;width:26px;height:26px;color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:14px;z-index:5;transition:background .15s}
+.admin-del:hover{background:rgba(185,28,28,1)}
+.admin-mode .photo-cell .admin-del{display:flex}
+.admin-mode .photo-cell{outline:1px solid rgba(185,28,28,.2)}
+/* Admin mode toggle bar */
+.admin-bar{display:none;align-items:center;justify-content:space-between;background:#fff0f0;border-bottom:1px solid #fecaca;padding:8px 18px;font-size:13px;color:#b91c1c}
+.admin-bar.show{display:flex}
+.admin-bar-btn{background:#b91c1c;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif}
+/* Confirm delete modal */
+.del-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0 0 env(safe-area-inset-bottom)}
+.del-modal.open{display:flex}
+.del-sheet{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px}
+.del-sheet h3{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px;color:#1a1a1a}
+.del-sheet p{font-size:14px;color:#666;margin-bottom:20px;line-height:1.5}
+.del-sheet-preview{width:100%;height:160px;border-radius:10px;overflow:hidden;margin-bottom:20px;background:#f3f3f3}
+.del-sheet-preview img,.del-sheet-preview video{width:100%;height:100%;object-fit:cover}
+.del-btns{display:flex;gap:10px}
+.del-btns button{flex:1;padding:13px;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.del-cancel{background:#f3f4f6;color:#374151}
+.del-confirm{background:#dc2626;color:#fff}
 
 /* UPLOAD */
 .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--white)}
@@ -204,10 +225,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
   <div class="lb-actions">
     <button onclick="downloadCurrent()"><i class="ti ti-download"></i> Download</button>
     <button onclick="shareCurrent()"><i class="ti ti-share"></i> Share</button>
+    <button id="lb-delete-btn" onclick="deleteFromLightbox()" style="display:none;background:rgba(220,38,38,.25);color:#fca5a5"><i class="ti ti-trash"></i> Delete</button>
   </div>
 </div>
 
-<!-- WELCOME PAGE -->
+<!-- DELETE CONFIRM MODAL -->
+<div class="del-modal" id="del-modal">
+  <div class="del-sheet">
+    <h3>Delete this photo?</h3>
+    <p>This will permanently remove it for everyone in the group. This cannot be undone.</p>
+    <div class="del-sheet-preview" id="del-preview"></div>
+    <div class="del-btns">
+      <button class="del-cancel" onclick="cancelDelete()">Cancel</button>
+      <button class="del-confirm" onclick="confirmDelete()"><i class="ti ti-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
 <div class="page active" id="page-welcome" style="flex-direction:column">
   <div class="welcome">
 
@@ -300,7 +333,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
     <div class="tab-content" id="tab-gallery" style="display:none">
       <div class="topbar">
         <span class="topbar-title"><i class="ti ti-photo"></i> Gallery</span>
-        <span class="tag" id="gallery-count">0 items</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="tag" id="gallery-count">0 items</span>
+          <button id="admin-toggle-btn" style="display:none;background:var(--amber-l);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--amber-d);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif" onclick="toggleAdminMode()">
+            <i class="ti ti-shield" style="font-size:14px;vertical-align:-2px"></i> Manage
+          </button>
+        </div>
+      </div>
+      <div class="admin-bar" id="admin-bar">
+        <span><i class="ti ti-shield-check" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i> Admin mode — tap 🗑 to delete</span>
+        <button class="admin-bar-btn" onclick="toggleAdminMode()"><i class="ti ti-x"></i> Done</button>
       </div>
       <div class="section">
         <div class="filter-chips" id="filter-chips">
@@ -495,6 +537,17 @@ function updateFilterChips(){
 }
 
 let currentFilter='all';
+let adminMode=false;
+let pendingDeleteId=null;
+
+function toggleAdminMode(){
+  adminMode=!adminMode;
+  document.getElementById('photo-grid').parentElement.parentElement.classList.toggle('admin-mode',adminMode);
+  document.getElementById('admin-bar').classList.toggle('show',adminMode);
+  // also show delete btn in lightbox when admin mode on
+  document.getElementById('lb-delete-btn').style.display=adminMode?'flex':'none';
+  renderGallery();
+}
 function filterBy(val,el){
   currentFilter=val;
   document.querySelectorAll('.filter-chips .chip').forEach(c=>c.classList.remove('active'));
@@ -503,6 +556,10 @@ function filterBy(val,el){
 }
 
 function renderGallery(){
+  // show manage button only for admin
+  const adminBtn=document.getElementById('admin-toggle-btn');
+  if(adminBtn) adminBtn.style.display=S.isAdmin?'block':'none';
+
   const filtered=currentFilter==='all'?S.trip.photos:S.trip.photos.filter(p=>p.uploader===currentFilter);
   document.getElementById('gallery-count').textContent=filtered.length+' items';
   const grid=document.getElementById('photo-grid');
@@ -512,14 +569,56 @@ function renderGallery(){
   }
   const allIdxs=filtered.map(p=>S.trip.photos.indexOf(p));
   grid.innerHTML=filtered.map((p,i)=>`
-    <div class="photo-cell" onclick="openLb(${allIdxs[i]},${JSON.stringify(allIdxs)})">
+    <div class="photo-cell" onclick="cellTap(event,${allIdxs[i]},${JSON.stringify(allIdxs)})">
       ${p.type==='video'?`<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video><div class="vid-badge">▶ Video</div>`:`<img src="${p.url}" loading="lazy"/>`}
       <div class="photo-meta">${p.uploader}</div>
+      <button class="admin-del" onclick="event.stopPropagation();askDelete('${p.id}',this)" aria-label="Delete"><i class="ti ti-trash" style="font-size:13px"></i></button>
     </div>`).join('');
 }
 
+function cellTap(e,idx,idxArr){
+  // in admin mode, tapping the cell (not the del btn) still opens lightbox
+  openLb(idx,idxArr);
+}
+
+function askDelete(photoId, btnEl){
+  pendingDeleteId=photoId;
+  const photo=S.trip.photos.find(p=>p.id===photoId);
+  if(!photo) return;
+  const prev=document.getElementById('del-preview');
+  prev.innerHTML=photo.type==='video'
+    ?`<video src="${photo.url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`
+    :`<img src="${photo.url}" style="width:100%;height:100%;object-fit:cover"/>`;
+  document.getElementById('del-modal').classList.add('open');
+}
+
+function cancelDelete(){
+  pendingDeleteId=null;
+  document.getElementById('del-modal').classList.remove('open');
+}
+
+async function confirmDelete(){
+  if(!pendingDeleteId) return;
+  const id=pendingDeleteId;
+  document.getElementById('del-modal').classList.remove('open');
+  try{
+    loading(true,'Deleting...');
+    await api('DELETE',`/trip/${S.code}/photo/${id}`);
+    const trip=await api('GET',`/trip/${S.code}`);
+    S.trip=trip;
+    renderAll();
+    // if lightbox was open, close it
+    closeLb();
+  }catch(e){alert('Could not delete: '+e.message);}
+  finally{loading(false);pendingDeleteId=null;}
+}
+
+function deleteFromLightbox(){
+  const p=S.trip.photos[S.currentLbPhotos[S.currentLbIdx]];
+  if(p) askDelete(p.id);
+}
+
 function renderMemories(){
-  const reel=document.getElementById('mem-reel');
   if(!S.trip.photos.length){reel.innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px 0">Upload photos to see highlights!</p>';}
   else{
     reel.innerHTML=[...S.trip.photos].reverse().map((p,i)=>{
@@ -629,6 +728,7 @@ function openLb(idx, idxArr){
   S.currentLbPhotos=idxArr;
   S.currentLbIdx=idxArr.indexOf(idx);
   showLbSlide();
+  document.getElementById('lb-delete-btn').style.display=S.isAdmin?'flex':'none';
   document.getElementById('lightbox').classList.add('open');
 }
 function showLbSlide(){
