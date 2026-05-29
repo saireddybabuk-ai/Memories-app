@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="theme-color" content="#c4700a"/>
+<meta name="color-scheme" content="light"/>
+<meta name="theme-color" content="#d97b0a"/>
 <title>Memories – Trip Photo Sharing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -17,6 +18,32 @@
   --film:#faf7f2;--white:#fff;--text:#2d1f0a;--muted:#8a7260;
   --border:rgba(196,112,10,0.18);--radius:12px;
   --shadow:0 2px 16px rgba(0,0,0,0.07);
+}
+/* Mobile color boost — counteract screen dullness */
+@media (max-width: 768px) {
+  :root{
+    --amber:#d97b0a;--amber-l:#faebd4;--amber-d:#8a4d00;
+  }
+  .w-hero{
+    background:linear-gradient(160deg,#4a1e02 0%,#8f4000 38%,#d97b0a 72%,#f5b843 100%) !important;
+    filter:saturate(1.18) brightness(1.06);
+  }
+  .w-camera-ring{background:rgba(255,255,255,.2) !important;border-color:rgba(255,255,255,.4) !important;}
+  .w-btn-create{background:linear-gradient(135deg,#d97b0a,#f5b843) !important;box-shadow:0 6px 22px rgba(217,123,10,.55) !important;}
+  .w-tab.active{background:#d97b0a !important;box-shadow:0 4px 16px rgba(217,123,10,.5) !important;}
+  .w-input:focus{border-color:#d97b0a !important;}
+  /* App hero banner */
+  .hero{filter:saturate(1.15) brightness(1.07);}
+  /* Stat cards accent */
+  .stat-card strong{color:#8a4d00 !important;}
+  /* Bottom nav active */
+  .nav-item.active{color:#d97b0a !important;}
+  /* Chips */
+  .chip.active{background:#d97b0a !important;border-color:#d97b0a !important;}
+  /* Upload zone hover */
+  .upload-zone i{color:#d97b0a !important;}
+  /* Info box */
+  .info-box{background:#faebd4 !important;color:#8a4d00 !important;}
 }
 body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);min-height:100dvh;overflow-x:hidden;width:100%}
 .page{display:none;flex-direction:column;min-height:100dvh;width:100%;overflow-x:hidden}
