@@ -57,6 +57,7 @@ app.post('/api/trip/create', (req, res) => {
     name: tripName,
     createdAt: new Date().toISOString(),
     members: [{ name: creatorName, isAdmin: true, joinedAt: new Date().toISOString() }],
+    banned: [],
     photos: []
   };
   saveDB();
@@ -68,6 +69,10 @@ app.post('/api/trip/join', (req, res) => {
   const { code, memberName } = req.body;
   const trip = db.trips[code?.toUpperCase()];
   if (!trip) return res.status(404).json({ error: 'Trip not found. Check the code.' });
+  const banned = (trip.banned || []).map(b => b.toLowerCase());
+  if (banned.includes(memberName?.toLowerCase())) {
+    return res.status(403).json({ error: 'You have been removed from this trip by the organiser and cannot rejoin.' });
+  }
   const exists = trip.members.find(m => m.name.toLowerCase() === memberName?.toLowerCase());
   if (exists) return res.json({ code: trip.code, tripName: trip.name, memberName, alreadyMember: true });
   trip.members.push({ name: memberName, isAdmin: false, joinedAt: new Date().toISOString() });
@@ -87,6 +92,10 @@ app.post('/api/trip/:code/upload', upload.array('files', 20), (req, res) => {
   const trip = db.trips[req.params.code?.toUpperCase()];
   if (!trip) return res.status(404).json({ error: 'Trip not found' });
   const { uploaderName, caption } = req.body;
+  const banned = (trip.banned || []).map(b => b.toLowerCase());
+  if (banned.includes(uploaderName?.toLowerCase())) {
+    return res.status(403).json({ error: 'You have been removed from this trip and cannot upload.' });
+  }
   if (!req.files || !req.files.length) return res.status(400).json({ error: 'No files' });
   const added = req.files.map(f => ({
     id: uuidv4(),
@@ -113,8 +122,24 @@ app.delete('/api/trip/:code/member', (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Member not found' });
   if (trip.members[idx].isAdmin) return res.status(403).json({ error: 'Cannot remove the admin' });
   trip.members.splice(idx, 1);
+  // Add to banned list so they cannot rejoin or upload
+  if (!trip.banned) trip.banned = [];
+  if (!trip.banned.map(b => b.toLowerCase()).includes(memberName.toLowerCase())) {
+    trip.banned.push(memberName.toLowerCase());
+  }
   saveDB();
   res.json({ removed: true });
+});
+
+// Unban member (admin only)
+app.post('/api/trip/:code/unban', (req, res) => {
+  const trip = db.trips[req.params.code?.toUpperCase()];
+  if (!trip) return res.status(404).json({ error: 'Trip not found' });
+  const { memberName } = req.body;
+  if (!trip.banned) trip.banned = [];
+  trip.banned = trip.banned.filter(b => b.toLowerCase() !== memberName?.toLowerCase());
+  saveDB();
+  res.json({ unbanned: true });
 });
 
 // Delete photo (admin only)
