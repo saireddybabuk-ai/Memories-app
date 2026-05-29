@@ -196,6 +196,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
 /* ADMIN BADGE */
 .crown{font-size:12px}
 .tag{display:inline-flex;align-items:center;gap:4px;background:var(--amber-l);color:var(--amber-d);border-radius:16px;padding:3px 10px;font-size:12px;font-weight:500}
+/* Remove member */
+.member-chip{position:relative}
+.member-remove{position:absolute;top:-3px;right:-3px;width:18px;height:18px;background:#dc2626;border:2px solid var(--film);border-radius:50%;color:#fff;font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1;padding:0}
+.admin-members .member-remove{display:flex}
+.rem-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.rem-modal.open{display:flex}
+.rem-sheet{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px}
+.rem-sheet h3{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px}
+.rem-sheet p{font-size:14px;color:#666;margin-bottom:8px;line-height:1.5}
+.rem-sheet .warn{font-size:12px;color:#b91c1c;background:#fee2e2;border-radius:8px;padding:8px 12px;margin-bottom:20px}
+.rem-btns{display:flex;gap:10px}
+.rem-btns button{flex:1;padding:13px;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.rem-cancel{background:#f3f4f6;color:#374151}
+.rem-confirm{background:#dc2626;color:#fff}
 
 /* PWA install prompt */
 .pwa-banner{background:var(--amber-d);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
@@ -226,6 +240,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
     <button onclick="downloadCurrent()"><i class="ti ti-download"></i> Download</button>
     <button onclick="shareCurrent()"><i class="ti ti-share"></i> Share</button>
     <button id="lb-delete-btn" onclick="deleteFromLightbox()" style="display:none;background:rgba(220,38,38,.25);color:#fca5a5"><i class="ti ti-trash"></i> Delete</button>
+  </div>
+</div>
+
+<!-- REMOVE MEMBER MODAL -->
+<div class="rem-modal" id="rem-modal">
+  <div class="rem-sheet">
+    <h3>Remove member?</h3>
+    <p id="rem-modal-name"></p>
+    <div class="warn">⚠️ This will remove them from the trip. Their uploaded photos will remain.</div>
+    <div class="rem-btns">
+      <button class="rem-cancel" onclick="cancelRemove()">Cancel</button>
+      <button class="rem-confirm" onclick="confirmRemove()"><i class="ti ti-user-minus"></i> Remove</button>
+    </div>
   </div>
 </div>
 
@@ -320,7 +347,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--film);color:var(--text);m
         <div class="stat-card"><strong id="stat-videos">0</strong><span>Videos</span></div>
       </div>
       <div class="section">
-        <div class="section-title">Members</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="section-title" style="margin-bottom:0">Members</div>
+          <button id="manage-members-btn" style="display:none;background:var(--amber-l);border:none;border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--amber-d);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif" onclick="toggleMemberManage()">
+            <i class="ti ti-users-minus" style="font-size:13px;vertical-align:-2px"></i> Manage
+          </button>
+        </div>
         <div class="members-scroll" id="members-strip"></div>
       </div>
       <div class="section" style="padding-top:0">
@@ -501,13 +533,30 @@ function renderAll(){
   updateFilterChips();
 }
 
+let memberManageMode=false;
+function toggleMemberManage(){
+  memberManageMode=!memberManageMode;
+  document.getElementById('members-strip').classList.toggle('admin-members',memberManageMode);
+  document.getElementById('manage-members-btn').textContent=memberManageMode?'✓ Done':'👥 Manage';
+  renderMembers();
+}
+
 function renderMembers(){
   const s=document.getElementById('members-strip');
-  s.innerHTML=S.trip.members.map(m=>`
-    <div class="member-chip">
-      <div class="avatar" style="background:${col(m.name)}">${ini(m.name)}</div>
+  const btn=document.getElementById('manage-members-btn');
+  if(btn) btn.style.display=S.isAdmin?'block':'none';
+  s.className='members-scroll'+(memberManageMode?' admin-members':'');
+  s.innerHTML=S.trip.members.map(m=>{
+    const isMe=m.name.toLowerCase()===S.myName.toLowerCase();
+    const canRemove=S.isAdmin && !m.isAdmin && !isMe;
+    return`<div class="member-chip">
+      <div style="position:relative;display:inline-block">
+        <div class="avatar" style="background:${col(m.name)}">${ini(m.name)}</div>
+        ${canRemove?`<button class="member-remove" onclick="askRemove('${m.name.replace(/'/g,"\\'")}')">✕</button>`:''}
+      </div>
       <span class="member-lbl">${m.name}${m.isAdmin?' 👑':''}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderHomeReel(){
@@ -581,6 +630,29 @@ function cellTap(e,idx,idxArr){
   openLb(idx,idxArr);
 }
 
+let pendingRemoveName=null;
+function askRemove(name){
+  pendingRemoveName=name;
+  document.getElementById('rem-modal-name').textContent=`Remove "${name}" from the trip?`;
+  document.getElementById('rem-modal').classList.add('open');
+}
+function cancelRemove(){
+  pendingRemoveName=null;
+  document.getElementById('rem-modal').classList.remove('open');
+}
+async function confirmRemove(){
+  if(!pendingRemoveName) return;
+  const name=pendingRemoveName;
+  document.getElementById('rem-modal').classList.remove('open');
+  try{
+    loading(true,'Removing member...');
+    await api('DELETE',`/trip/${S.code}/member`,{memberName:name});
+    const trip=await api('GET',`/trip/${S.code}`);
+    S.trip=trip; renderAll();
+  }catch(e){alert('Could not remove: '+e.message);}
+  finally{loading(false);pendingRemoveName=null;}
+}
+
 function askDelete(photoId, btnEl){
   pendingDeleteId=photoId;
   const photo=S.trip.photos.find(p=>p.id===photoId);
@@ -619,6 +691,7 @@ function deleteFromLightbox(){
 }
 
 function renderMemories(){
+  const reel=document.getElementById('mem-reel');
   if(!S.trip.photos.length){reel.innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px 0">Upload photos to see highlights!</p>';}
   else{
     reel.innerHTML=[...S.trip.photos].reverse().map((p,i)=>{
